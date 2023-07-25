@@ -1,0 +1,22 @@
+{
+  "name": "s3api",
+  "version": "1.0.0",
+  "description": "s3api",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "update": "chmod a+x updategitdependency.sh && ./updategitdependency.sh",
+    "build": "chmod a+x buildtestimage.sh && ./buildtestimage.sh c3pobot/s3api",
+    "prod": "chmod a+x buildprodimage.sh && ./buildprodimage.sh c3pobot/s3api"
+  },
+  "author": "scuba",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.370.0",
+    "body-parser": "^1.20.1",
+    "chalk": "^4.1.0",
+    "compression": "^1.7.4",
+    "express": "^4.18.2",
+    "logger": "github:c3pobot/logger"
+  }
+}

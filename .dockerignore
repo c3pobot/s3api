@@ -1,0 +1,14 @@
+.git
+.gitignore
+.dockerignore
+.env
+.env.example
+.testregistry
+buildprodimage.sh
+buildtestimage.sh
+updategitdependency.sh
+Dockerfile
+node_modules
+data
+cache
+docker-compose.yaml
