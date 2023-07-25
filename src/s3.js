@@ -10,6 +10,7 @@ const s3 = new S3Client({
     region: 'US-central',
     forcePathStyle : true
 });
+
 module.exports.list = async(req, res)=>{
   try{
     let command, obj
@@ -29,10 +30,13 @@ module.exports.put = async(req, res)=>{
   try{
     let payload = req?.body, command, obj
     if(payload?.Body){
-      payload.Body = Buffer.from(payload.Body, 'base64')
-      payload.ContentType = 'image/png'
+      if(req.body?.Key?.endsWith('.png')){
+        payload.Body = Buffer.from(payload.Body, 'base64')
+        payload.ContentType = 'image/png'
+      }
+      if(req.body?.Key?.endsWith('.json')) payload.ContentType = 'application/json'
     }
-    if(payload?.Body) command = new PutObjectCommand(payload)
+    if(payload?.Body && payload?.ContentType) command = new PutObjectCommand(payload)
     if(command) obj = await s3.send(command)
     if(obj?.ETag){
       res.status(200).send(obj)
@@ -46,17 +50,27 @@ module.exports.put = async(req, res)=>{
 }
 module.exports.get = async(req, res)=>{
   try{
-    let command, obj, img
+    let command, obj, img, str
     if(req?.query?.Bucket) command =  new GetObjectCommand(req.query)
     if(command) obj = await s3.send(command)
-    if(obj?.Body) img = await obj.Body.transformToByteArray()
-    if(img){
-      res.contentType('image/png');
-      res.send(new Buffer.from(img))
+    if(obj?.Body){
+      if(req.query?.Key?.endsWith('.png')){
+        res.contentType('image/png');
+        img = await obj.Body.transformToByteArray()
+      }
+      if(req.query?.Key?.endsWith('.json')){
+        res.contentType('application/json');
+        str = await obj.Body.transformToString()
+      }
+    }
+    if(img || str){
+      if(img) res.status(200).send(new Buffer.from(img))
+      if(str) res.status(200).send(JSON.parse(str))
     }else{
       res.sendStatus(400)
     }
   }catch(e){
+    log.error('Error getting key '+req?.query?.Key+' from bucket '+req?.query?.Bucket+'...')
     log.error(e);
     res?.sendStatus(400)
   }
