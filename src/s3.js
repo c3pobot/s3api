@@ -51,15 +51,17 @@ module.exports.put = async(req, res)=>{
 module.exports.get = async(req, res)=>{
   try{
     let command, obj, img, str
-    if(req?.query?.Bucket) command =  new GetObjectCommand(req.query)
+    let payload = req.query
+    if(payload?.Key?.endsWith('.json')) payload.ResponseContentType = 'application/json'
+    if(payload?.Key?.endsWith('.png')) payload.ResponseContentType = 'image/png'
+    if(payload?.Bucket) command =  new GetObjectCommand(payload)
     if(command) obj = await s3.send(command)
     if(obj?.Body){
+      if(obj?.ContentType) res.contentType(obj.ContentType)
       if(req.query?.Key?.endsWith('.png')){
-        res.contentType('image/png');
         img = await obj.Body.transformToByteArray()
       }
       if(req.query?.Key?.endsWith('.json')){
-        res.contentType('application/json');
         str = await obj.Body.transformToString()
       }
     }
